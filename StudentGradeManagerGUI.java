@@ -1,119 +1,378 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
+import java.io.FileWriter;
+import java.util.HashMap;
 
-class Student {
-    String name;
-    double grade;
+public class GradeTrackerGUI extends JFrame {
 
-    Student(String name, double grade) {
-        this.name = name;
-        this.grade = grade;
-    }
+
+JTextField nameField;
+JTextField rollField;
+JTextField englishField;
+JTextField mathsField;
+JTextField physicsField;
+JTextField chemistryField;
+JTextField computerField;
+JTextField hindiField;
+
+JTextArea resultArea;
+
+JProgressBar progressBar;
+
+HashMap<String, Student> studentMap = new HashMap<>();
+
+boolean darkMode = false;
+
+public GradeTrackerGUI() {
+
+    setTitle("Student Result Management System - Dashboard");
+    setSize(900, 700);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    getContentPane().setBackground(
+        new Color(245,245,245));
+JLabel title = new JLabel(
+        "STUDENT RESULT MANAGEMENT SYSTEM",
+        SwingConstants.CENTER);
+
+title.setFont(
+        new Font("Times New Roman",
+                Font.BOLD,
+                28));
+
+title.setForeground(
+        new Color(25,118,210));
+    JPanel panel = new JPanel();
+    panel.setLayout(new GridLayout(8, 2, 10, 10));
+
+    panel.add(new JLabel("Student Name"));
+    nameField = new JTextField();
+    panel.add(nameField);
+
+    panel.add(new JLabel("Roll Number"));
+    rollField = new JTextField();
+    panel.add(rollField);
+
+    panel.add(new JLabel("English"));
+    englishField = new JTextField();
+    panel.add(englishField);
+
+    panel.add(new JLabel("Mathematics"));
+    mathsField = new JTextField();
+    panel.add(mathsField);
+
+    panel.add(new JLabel("Physics"));
+    physicsField = new JTextField();
+    panel.add(physicsField);
+
+    panel.add(new JLabel("Chemistry"));
+    chemistryField = new JTextField();
+    panel.add(chemistryField);
+
+    panel.add(new JLabel("Computer"));
+    computerField = new JTextField();
+    panel.add(computerField);
+
+    panel.add(new JLabel("Hindi"));
+    hindiField = new JTextField();
+    panel.add(hindiField);
+    Font fieldFont =
+        new Font(
+                "Segoe UI",
+                Font.PLAIN,
+                16);
+
+nameField.setFont(fieldFont);
+rollField.setFont(fieldFont);
+englishField.setFont(fieldFont);
+mathsField.setFont(fieldFont);
+physicsField.setFont(fieldFont);
+chemistryField.setFont(fieldFont);
+computerField.setFont(fieldFont);
+hindiField.setFont(fieldFont);
+
+    JButton calculateBtn = new JButton("Calculate");
+    JButton resetBtn = new JButton("Reset");
+    JButton saveBtn = new JButton("Save TXT");
+    JButton searchBtn = new JButton("Search");
+    JButton darkBtn = new JButton("Dark Mode");
+
+    JPanel topButtonPanel = new JPanel();
+    topButtonPanel.add(calculateBtn);
+    topButtonPanel.add(resetBtn);
+
+    JPanel sideButtonPanel = new JPanel();
+    sideButtonPanel.setLayout(new GridLayout(3, 1, 5, 5));
+    sideButtonPanel.add(saveBtn);
+    sideButtonPanel.add(searchBtn);
+    sideButtonPanel.add(darkBtn);
+
+    resultArea = new JTextArea();
+    resultArea.setFont(
+        new Font(
+                "Consolas",
+                Font.PLAIN,
+                16));
+
+resultArea.setBorder(
+        BorderFactory.createTitledBorder(
+                "Student Report"));
+    resultArea.setFont(new Font("Arial", Font.PLAIN, 16));
+
+    JScrollPane scrollPane = new JScrollPane(resultArea);
+
+    progressBar = new JProgressBar(0, 100);
+    progressBar.setStringPainted(true);
+
+    JPanel northPanel = new JPanel(new BorderLayout());
+    northPanel.add(panel, BorderLayout.CENTER);
+    northPanel.add(topButtonPanel, BorderLayout.SOUTH);
+
+    JPanel headerPanel =
+        new JPanel(new BorderLayout());
+
+headerPanel.add(
+        title,
+        BorderLayout.NORTH);
+
+headerPanel.add(
+        northPanel,
+        BorderLayout.CENTER);
+
+add(headerPanel,
+        BorderLayout.NORTH);
+    add(scrollPane, BorderLayout.CENTER);
+    add(sideButtonPanel, BorderLayout.EAST);
+    add(progressBar, BorderLayout.SOUTH);
+
+    calculateBtn.addActionListener(e -> calculateResult());
+    resetBtn.addActionListener(e -> resetFields());
+    saveBtn.addActionListener(e -> saveReport());
+    searchBtn.addActionListener(e -> searchStudent());
+    darkBtn.addActionListener(e -> toggleDarkMode());
+
+    setVisible(true);
 }
 
-public class StudentGradeManagerGUI extends JFrame {
-    private JTextField nameField, gradeField;
-    private JButton addButton, statsButton;
-    private JTable table;
-    private DefaultTableModel tableModel;
-    private JLabel avgLabel, highLabel, lowLabel;
+private void calculateResult() {
 
-    private ArrayList<Student> students = new ArrayList<>();
+    try {
 
-    public StudentGradeManagerGUI() {
-        setTitle("Student Grade Manager");
-        setSize(600, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        String studentId =
+                "STU" + (System.currentTimeMillis() % 10000);
 
-        // Top input panel
-        JPanel inputPanel = new JPanel(new GridLayout(2, 3, 10, 10));
-        inputPanel.setBorder(BorderFactory.createTitledBorder("Add Student"));
+        String name = nameField.getText();
+        String rollNo = rollField.getText();
 
-        nameField = new JTextField();
-        gradeField = new JTextField();
-        addButton = new JButton("Add Student");
+        int english = Integer.parseInt(englishField.getText());
+        int maths = Integer.parseInt(mathsField.getText());
+        int physics = Integer.parseInt(physicsField.getText());
+        int chemistry = Integer.parseInt(chemistryField.getText());
+        int computer = Integer.parseInt(computerField.getText());
+        int hindi = Integer.parseInt(hindiField.getText());
 
-        inputPanel.add(new JLabel("Name:"));
-        inputPanel.add(nameField);
-        inputPanel.add(new JLabel("")); // empty
+        if (english < 0 || english > 100 ||
+            maths < 0 || maths > 100 ||
+            physics < 0 || physics > 100 ||
+            chemistry < 0 || chemistry > 100 ||
+            computer < 0 || computer > 100 ||
+            hindi < 0 || hindi > 100) {
 
-        inputPanel.add(new JLabel("Grade:"));
-        inputPanel.add(gradeField);
-        inputPanel.add(addButton);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Marks must be between 0 and 100");
 
-        add(inputPanel, BorderLayout.NORTH);
-
-        // Table to display students
-        tableModel = new DefaultTableModel(new Object[]{"Name", "Grade"}, 0);
-        table = new JTable(tableModel);
-        add(new JScrollPane(table), BorderLayout.CENTER);
-
-        // Bottom panel for stats
-        JPanel statsPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-        statsPanel.setBorder(BorderFactory.createTitledBorder("Statistics"));
-
-        avgLabel = new JLabel("Average: -");
-        highLabel = new JLabel("Highest: -");
-        lowLabel = new JLabel("Lowest: -");
-        statsButton = new JButton("Calculate Stats");
-
-        statsPanel.add(avgLabel);
-        statsPanel.add(highLabel);
-        statsPanel.add(lowLabel);
-        statsPanel.add(statsButton);
-
-        add(statsPanel, BorderLayout.SOUTH);
-
-        // Event: Add Student
-        addButton.addActionListener(e -> {
-            String name = nameField.getText().trim();
-            String gradeText = gradeField.getText().trim();
-
-            if (name.isEmpty() || gradeText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please enter both name and grade.");
-                return;
-            }
-
-            try {
-                double grade = Double.parseDouble(gradeText);
-                students.add(new Student(name, grade));
-                tableModel.addRow(new Object[]{name, grade});
-                nameField.setText("");
-                gradeField.setText("");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid grade.");
-            }
-        });
-
-        // Event: Calculate Stats
-        statsButton.addActionListener(e -> calculateStats());
-    }
-
-    private void calculateStats() {
-        if (students.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No students available.");
             return;
         }
 
-        double sum = 0, highest = Double.MIN_VALUE, lowest = Double.MAX_VALUE;
-        for (Student s : students) {
-            sum += s.grade;
-            if (s.grade > highest) highest = s.grade;
-            if (s.grade < lowest) lowest = s.grade;
+        Student student = new Student(
+                studentId,
+                rollNo,
+                name,
+                english,
+                maths,
+                physics,
+                chemistry,
+                computer,
+                hindi
+        );
+
+        studentMap.put(name, student);
+
+        progressBar.setValue(
+                (int) student.getPercentage());
+
+        resultArea.setText(
+                "========== STUDENT REPORT ==========\n\n" +
+
+                "Student ID : " +
+                student.getStudentId() + "\n" +
+
+                "Roll Number : " +
+                student.getRollNo() + "\n" +
+
+                "Name : " +
+                student.getName() + "\n\n" +
+
+                "English : " + english + "\n" +
+                "Mathematics : " + maths + "\n" +
+                "Physics : " + physics + "\n" +
+                "Chemistry : " + chemistry + "\n" +
+                "Computer : " + computer + "\n" +
+                "Hindi : " + hindi + "\n\n" +
+
+                "Total Marks : " +
+                student.getTotal() + "/600\n" +
+
+                "Percentage : " +
+                String.format("%.2f",
+                        student.getPercentage()) +
+                "%\n" +
+
+                "Grade : " +
+                student.getGrade() + "\n" +
+
+                "Status : " +
+                student.getStatus() + "\n" +
+
+                "Position : " +
+                student.getPosition()
+        );
+
+    } catch (Exception ex) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Please enter valid marks!");
+    }
+}
+
+private void resetFields() {
+
+    nameField.setText("");
+    rollField.setText("");
+
+    englishField.setText("");
+    mathsField.setText("");
+    physicsField.setText("");
+    chemistryField.setText("");
+    computerField.setText("");
+    hindiField.setText("");
+
+    resultArea.setText("");
+    progressBar.setValue(0);
+}
+
+private void saveReport() {
+
+    try {
+
+        FileWriter writer =
+                new FileWriter("StudentReport.txt");
+
+        writer.write(resultArea.getText());
+
+        writer.close();
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Report Saved Successfully");
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+}
+
+private void searchStudent() {
+
+    String name =
+            JOptionPane.showInputDialog(
+                    "Enter Student Name");
+
+    Student student =
+            studentMap.get(name);
+
+    if (student != null) {
+
+        resultArea.setText(
+                "Student Found\n\n" +
+
+                "Student ID : " +
+                student.getStudentId() + "\n" +
+
+                "Roll No : " +
+                student.getRollNo() + "\n" +
+
+                "Name : " +
+                student.getName() + "\n" +
+
+                "Percentage : " +
+                String.format("%.2f",
+                        student.getPercentage()) +
+                "%\n" +
+
+                "Grade : " +
+                student.getGrade() + "\n" +
+
+                "Status : " +
+                student.getStatus()
+        );
+
+    } else {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Student Not Found");
+    }
+}
+
+private void toggleDarkMode() {
+
+    if (!darkMode) {
+
+        getContentPane().setBackground(Color.DARK_GRAY);
+
+        resultArea.setBackground(Color.BLACK);
+        resultArea.setForeground(Color.WHITE);
+
+        darkMode = true;
+
+    } else {
+
+        getContentPane().setBackground(Color.WHITE);
+
+        resultArea.setBackground(Color.WHITE);
+        resultArea.setForeground(Color.BLACK);
+
+        darkMode = false;
+    }
+}
+
+public static void main(String[] args) {
+
+    try {
+
+        for (UIManager.LookAndFeelInfo info :
+                UIManager.getInstalledLookAndFeels()) {
+
+            if ("Nimbus".equals(info.getName())) {
+
+                UIManager.setLookAndFeel(
+                        info.getClassName());
+
+                break;
+            }
         }
 
-        double avg = sum / students.size();
+    } catch (Exception e) {
 
-        avgLabel.setText("Average: " + String.format("%.2f", avg));
-        highLabel.setText("Highest: " + highest);
-        lowLabel.setText("Lowest: " + lowest);
+        e.printStackTrace();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new StudentGradeManagerGUI().setVisible(true));
-    }
+    SwingUtilities.invokeLater(
+            GradeTrackerGUI::new
+    );
+}
+
+
 }
